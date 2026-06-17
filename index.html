@@ -72,8 +72,10 @@ html, body {
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
   width: 100%;
 }
+.field-input:disabled { background: #F1EFE6; color: #8B8B7E; }
 .field-input:focus { border-color: #B8924A; box-shadow: 0 0 0 3px rgba(184,146,74,0.22); }
 .field-error { color: #8B2E3C; font-size: 12.5px; margin: 10px 0 0; }
+.field-msg-success { color: #5B7A5E; font-size: 12.5px; margin: 10px 0 0; }
 
 .submit-btn {
   margin-top: 22px;
@@ -186,16 +188,17 @@ html, body {
 .module-title { font-size: 14.5px; font-weight: 600; color: #20303F; }
 .module-desc { font-size: 12px; color: #79877F; line-height: 1.4; }
 .module-tag { position: absolute; top: 14px; right: 14px; font-size: 10px; background: #F1E9D6; color: #8B6A2C; border-radius: 20px; padding: 2px 9px; font-weight: 600; }
+.module-tag.ready { background: #E4EFE5; color: #4D6850; }
 
-/* ---------- Admin approval panel ---------- */
-.approval-panel {
-  margin-top: 32px;
+/* ---------- Cards (approval panel + profile sections share this) ---------- */
+.panel-card {
+  margin-top: 24px;
   background: #FFFFFF;
   border: 1px solid #E4DFCD;
   border-radius: 14px;
-  padding: 20px 20px 8px;
+  padding: 20px 20px 22px;
 }
-.approval-panel-title {
+.panel-title {
   font-family: "Taviraj", serif;
   font-size: 16px;
   font-weight: 600;
@@ -211,7 +214,7 @@ html, body {
   border-radius: 20px;
   padding: 1px 9px;
 }
-.approval-panel-sub { font-size: 12px; color: #79877F; margin: 0 0 14px; }
+.panel-sub { font-size: 12px; color: #79877F; margin: 0 0 14px; }
 .approval-row {
   display: flex;
   align-items: center;
@@ -239,7 +242,10 @@ html, body {
 .approve-btn:hover { background: #4D6850; }
 .reject-btn { background: transparent; border-color: #D8B6BB; color: #8B2E3C; }
 .reject-btn:hover { background: #F3DFE1; }
-.approval-empty { font-size: 12.5px; color: #9A9580; padding: 10px 0 16px; }
+.approval-empty { font-size: 12.5px; color: #9A9580; padding: 10px 0 4px; }
+
+.profile-form { max-width: 420px; }
+.back-link { display: inline-flex; align-items: center; gap: 4px; margin-bottom: 18px; }
 
 .toast {
   position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
@@ -373,15 +379,62 @@ html, body {
     </div>
   </header>
 
-  <main class="dash-main">
+  <!-- หน้าแรกของ dashboard: รวมโมดูล + แผงอนุมัติ -->
+  <main class="dash-main" id="dash-main-home">
     <h2 class="dash-greeting" id="greeting">สวัสดี</h2>
-    <p class="dash-greeting-sub">เลือกระบบที่ต้องการใช้งานด้านล่าง</p>
+    <p class="dash-greeting-sub" id="select-system-text">เลือกระบบที่ต้องการใช้งานด้านล่าง</p>
     <div class="module-grid" id="module-grid"></div>
 
-    <div class="approval-panel" id="approval-panel" style="display:none;">
-      <p class="approval-panel-title">รายชื่อรอการอนุมัติ <span class="approval-count" id="approval-count">0</span></p>
-      <p class="approval-panel-sub">บุคลากรที่สมัครสมาชิกใหม่จะต้องได้รับการอนุมัติก่อนเข้าใช้งานระบบได้</p>
+    <div class="panel-card" id="approval-panel" style="display:none;">
+      <p class="panel-title">
+        <span id="approval-title-text">รายชื่อรอการอนุมัติ</span>
+        <span class="approval-count" id="approval-count">0</span>
+      </p>
+      <p class="panel-sub" id="approval-sub-text">บุคลากรที่สมัครสมาชิกใหม่จะต้องได้รับการอนุมัติก่อนเข้าใช้งานระบบได้</p>
       <div id="approval-list"></div>
+    </div>
+  </main>
+
+  <!-- หน้าโปรไฟล์ของฉัน -->
+  <main class="dash-main" id="dash-main-profile" style="display:none;">
+    <button type="button" class="text-link back-link" id="profile-back-btn">‹ <span id="profile-back-label">กลับสู่หน้าหลัก</span></button>
+    <h2 class="dash-greeting" id="profile-page-title">ข้อมูลพนักงาน</h2>
+
+    <div class="panel-card profile-form">
+      <p class="panel-title" id="profile-section1-title">ข้อมูลส่วนตัว</p>
+      <div class="auth-form">
+        <label class="field-label" id="lbl-fullname" for="profile-fullname">ชื่อ-นามสกุล</label>
+        <input id="profile-fullname" type="text" class="field-input" />
+
+        <label class="field-label" id="lbl-position" for="profile-position">ตำแหน่ง</label>
+        <input id="profile-position" type="text" class="field-input" />
+
+        <label class="field-label" id="lbl-email" for="profile-email">อีเมล (ไม่สามารถเปลี่ยนได้)</label>
+        <input id="profile-email" type="text" class="field-input" disabled />
+
+        <label class="field-label" id="lbl-language" for="profile-language">ภาษาของระบบ</label>
+        <select id="profile-language" class="field-input">
+          <option value="th">ไทย</option>
+          <option value="en">English</option>
+        </select>
+
+        <p id="profile-info-msg" style="display:none;"></p>
+        <button type="button" class="submit-btn" id="profile-save-btn">บันทึกข้อมูล</button>
+      </div>
+    </div>
+
+    <div class="panel-card profile-form">
+      <p class="panel-title" id="profile-section2-title">เปลี่ยนรหัสผ่าน</p>
+      <div class="auth-form">
+        <label class="field-label" id="lbl-newpw" for="profile-newpw">รหัสผ่านใหม่</label>
+        <input id="profile-newpw" type="password" class="field-input" autocomplete="new-password" />
+
+        <label class="field-label" id="lbl-confirmpw" for="profile-confirmpw">ยืนยันรหัสผ่านใหม่</label>
+        <input id="profile-confirmpw" type="password" class="field-input" autocomplete="new-password" />
+
+        <p id="profile-pw-msg" style="display:none;"></p>
+        <button type="button" class="submit-btn" id="profile-pw-btn">เปลี่ยนรหัสผ่าน</button>
+      </div>
     </div>
   </main>
 </div>
@@ -393,19 +446,106 @@ html, body {
 const SUPABASE_URL = "https://aggmdscjpghroeoafmev.supabase.co";
 const SUPABASE_KEY = "sb_publishable_35uwuARNHkd8TmXTdtvaSQ_-Yih5YK2";
 
-const MODULES = [
-  { title: "ข้อมูลพนักงาน", desc: "ประวัติและข้อมูลส่วนตัวบุคลากร", tag: "พก" },
-  { title: "ลงเวลา / ลางาน", desc: "บันทึกเวลาเข้า-ออกและการลา", tag: "วล" },
-  { title: "เงินเดือน / สวัสดิการ", desc: "สลิปเงินเดือนและสิทธิประโยชน์", tag: "งด" },
-  { title: "ประเมินผลปฏิบัติงาน", desc: "แบบประเมินและผลงานประจำปี", tag: "ปม" },
-  { title: "เอกสาร / คำสั่งราชการ", desc: "คำสั่ง หนังสือเวียน และเอกสารราชการ", tag: "อก" },
-];
+const MODULE_KEYS = ["profile", "attendance", "payroll", "evaluation", "documents"];
+const MODULE_TAGS = {
+  th: ["พก", "วล", "งด", "ปม", "อก"],
+  en: ["PF", "AT", "PR", "EV", "DC"],
+};
+
+const I18N = {
+  th: {
+    selectSystem: "เลือกระบบที่ต้องการใช้งานด้านล่าง",
+    logout: "ออกจากระบบ",
+    comingSoon: "เร็วๆนี้",
+    ready: "พร้อมใช้งาน",
+    adminBadge: "ผู้ดูแลระบบ",
+    approvalTitle: "รายชื่อรอการอนุมัติ",
+    approvalSub: "บุคลากรที่สมัครสมาชิกใหม่จะต้องได้รับการอนุมัติก่อนเข้าใช้งานระบบได้",
+    approve: "อนุมัติ",
+    reject: "ปฏิเสธ",
+    approvalEmpty: "ไม่มีรายการรอดำเนินการในขณะนี้",
+    hello: "สวัสดี",
+    devToast: (title) => `โมดูล "${title}" อยู่ระหว่างพัฒนา เร็วๆนี้`,
+    modules: [
+      { title: "ข้อมูลพนักงาน", desc: "ประวัติและข้อมูลส่วนตัวบุคลากร" },
+      { title: "ลงเวลา / ลางาน", desc: "บันทึกเวลาเข้า-ออกและการลา" },
+      { title: "เงินเดือน / สวัสดิการ", desc: "สลิปเงินเดือนและสิทธิประโยชน์" },
+      { title: "ประเมินผลปฏิบัติงาน", desc: "แบบประเมินและผลงานประจำปี" },
+      { title: "เอกสาร / คำสั่งราชการ", desc: "คำสั่ง หนังสือเวียน และเอกสารราชการ" },
+    ],
+    profile: {
+      pageTitle: "ข้อมูลพนักงาน",
+      back: "กลับสู่หน้าหลัก",
+      section1: "ข้อมูลส่วนตัว",
+      fullName: "ชื่อ-นามสกุล",
+      position: "ตำแหน่ง",
+      email: "อีเมล (ไม่สามารถเปลี่ยนได้)",
+      language: "ภาษาของระบบ",
+      save: "บันทึกข้อมูล",
+      saved: "บันทึกข้อมูลแล้ว",
+      fillRequired: "กรุณากรอกข้อมูลให้ครบ",
+      pwTitle: "เปลี่ยนรหัสผ่าน",
+      newPw: "รหัสผ่านใหม่",
+      confirmPw: "ยืนยันรหัสผ่านใหม่",
+      changePw: "เปลี่ยนรหัสผ่าน",
+      pwChanged: "เปลี่ยนรหัสผ่านสำเร็จ",
+      pwMismatch: "รหัสผ่านทั้งสองช่องไม่ตรงกัน",
+      pwTooShort: "รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร",
+    },
+  },
+  en: {
+    selectSystem: "Select a system below",
+    logout: "Log out",
+    comingSoon: "Coming soon",
+    ready: "Available",
+    adminBadge: "Administrator",
+    approvalTitle: "Pending approvals",
+    approvalSub: "New sign-ups must be approved before they can access the system.",
+    approve: "Approve",
+    reject: "Reject",
+    approvalEmpty: "No pending requests right now.",
+    hello: "Hello",
+    devToast: (title) => `The "${title}" module is under development. Coming soon.`,
+    modules: [
+      { title: "My Profile", desc: "Personal history and personnel details" },
+      { title: "Time / Leave", desc: "Clock in/out records and leave requests" },
+      { title: "Payroll / Benefits", desc: "Pay slips and benefit entitlements" },
+      { title: "Performance Review", desc: "Annual evaluation forms and results" },
+      { title: "Documents / Orders", desc: "Official orders, circulars and documents" },
+    ],
+    profile: {
+      pageTitle: "My Profile",
+      back: "Back to dashboard",
+      section1: "Personal information",
+      fullName: "Full name",
+      position: "Position",
+      email: "Email (cannot be changed)",
+      language: "System language",
+      save: "Save changes",
+      saved: "Changes saved",
+      fillRequired: "Please fill in all fields",
+      pwTitle: "Change password",
+      newPw: "New password",
+      confirmPw: "Confirm new password",
+      changePw: "Change password",
+      pwChanged: "Password changed successfully",
+      pwMismatch: "Passwords do not match",
+      pwTooShort: "Password must be at least 6 characters",
+    },
+  },
+};
 
 const $ = (id) => document.getElementById(id);
 let loginLoading = false;
 let signupLoading = false;
 let currentSession = null;  // { access_token, user }
-let currentProfile = null;  // { full_name, position, role, status }
+let currentProfile = null;  // { full_name, position, role, status, language }
+let currentLanguage = "th";
+
+function t(path) {
+  const dict = I18N[currentLanguage] || I18N.th;
+  return path.split(".").reduce((o, k) => (o ? o[k] : undefined), dict);
+}
 
 function showView(name) {
   $("view-login").style.display = name === "login" ? "flex" : "none";
@@ -426,16 +566,26 @@ function showToast(msg) {
 function renderModules() {
   const grid = $("module-grid");
   grid.innerHTML = "";
-  MODULES.forEach((m) => {
+  const mods = t("modules");
+  const tags = MODULE_TAGS[currentLanguage] || MODULE_TAGS.th;
+  mods.forEach((m, i) => {
+    const key = MODULE_KEYS[i];
     const card = document.createElement("button");
     card.className = "module-card";
+    const tagHtml = key === "profile"
+      ? `<span class="module-tag ready">${t("ready")}</span>`
+      : `<span class="module-tag">${t("comingSoon")}</span>`;
     card.innerHTML = `
-      <span class="module-icon">${m.tag}</span>
+      <span class="module-icon">${tags[i]}</span>
       <span class="module-title">${m.title}</span>
       <span class="module-desc">${m.desc}</span>
-      <span class="module-tag">เร็วๆนี้</span>
+      ${tagHtml}
     `;
-    card.addEventListener("click", () => showToast(`โมดูล "${m.title}" อยู่ระหว่างพัฒนา เร็วๆนี้`));
+    if (key === "profile") {
+      card.addEventListener("click", openProfilePage);
+    } else {
+      card.addEventListener("click", () => showToast(t("devToast")(m.title)));
+    }
     grid.appendChild(card);
   });
 }
@@ -480,7 +630,7 @@ async function handleLogin() {
     let profile = null;
     try {
       const pRes = await fetch(
-        `${SUPABASE_URL}/rest/v1/profiles?id=eq.${data.user.id}&select=full_name,position,role,status`,
+        `${SUPABASE_URL}/rest/v1/profiles?id=eq.${data.user.id}&select=full_name,position,role,status,language`,
         { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${data.access_token}` } }
       );
       const rows = await pRes.json();
@@ -489,10 +639,11 @@ async function handleLogin() {
     currentProfile = profile;
 
     if (profile && profile.status === "active") {
+      currentLanguage = profile.language === "en" ? "en" : "th";
       $("login-card").classList.add("is-stamping");
       $("login-seal-wrap").classList.add("stamp-anim");
       setTimeout(() => {
-        showDashboard(profile, data.user.email);
+        showDashboard();
         setLoginLoading(false);
       }, 900);
     } else {
@@ -516,7 +667,7 @@ function setSignupLoading(v) {
   signupLoading = v;
   $("signup-submit-btn").disabled = v;
   $("signup-submit-btn").textContent = v ? "กำลังส่งคำขอ..." : "สมัครสมาชิก";
-  ["su-fullname","su-position","su-email","su-password","su-password2"].forEach(id => $(id).disabled = v);
+  ["su-fullname", "su-position", "su-email", "su-password", "su-password2"].forEach((id) => ($(id).disabled = v));
 }
 
 async function handleSignup() {
@@ -556,8 +707,7 @@ async function handleSignup() {
     if (!res.ok) {
       throw new Error(data.error_description || data.msg || data.error || "สมัครสมาชิกไม่สำเร็จ ลองใหม่อีกครั้ง");
     }
-    // เคลียร์ฟอร์ม แล้วแสดงหน้ารออนุมัติ (ไม่ใช้ session ที่ได้กลับมา ปล่อยให้รอ admin อนุมัติก่อน)
-    ["su-fullname","su-position","su-email","su-password","su-password2"].forEach(id => $(id).value = "");
+    ["su-fullname", "su-position", "su-email", "su-password", "su-password2"].forEach((id) => ($(id).value = ""));
     showPendingScreen("pending", "signup");
   } catch (err) {
     setSignupError(err.message);
@@ -572,13 +722,13 @@ function showPendingScreen(status, context) {
   const title = $("pending-title");
   const msg = $("pending-msg");
   const seal = $("pending-seal");
+  seal.classList.add("muted");
 
   if (status === "rejected") {
     tag.className = "pending-tag rejected";
     tag.textContent = "ไม่ได้รับอนุมัติ";
     title.textContent = "บัญชีนี้ไม่ได้รับสิทธิ์เข้าใช้งาน";
     msg.textContent = "กรุณาติดต่อผู้ดูแลระบบของโรงเรียนเพื่อสอบถามรายละเอียดเพิ่มเติม";
-    seal.classList.add("muted");
   } else {
     tag.className = "pending-tag pending";
     tag.textContent = "รอการอนุมัติ";
@@ -589,30 +739,38 @@ function showPendingScreen(status, context) {
       title.textContent = "บัญชีนี้ยังรอการอนุมัติ";
       msg.textContent = "ผู้ดูแลระบบยังไม่ได้อนุมัติบัญชีของคุณ กรุณารอการแจ้งเตือนหรือติดต่อผู้ดูแลระบบ";
     }
-    seal.classList.add("muted");
   }
   showView("pending");
 }
 
-/* ---------------- Dashboard ---------------- */
-function showDashboard(profile, email) {
-  const displayName = (profile && profile.full_name) || email || "ผู้ใช้งาน";
-  const displayPosition = (profile && profile.position) || "บุคลากร";
-  const isAdmin = profile && profile.role === "admin";
-
-  $("user-name").textContent = displayName;
-  $("user-role").innerHTML =
-    displayPosition + (isAdmin ? ` <span class="admin-pill">ผู้ดูแลระบบ</span>` : "");
-  $("greeting").textContent = "สวัสดี, " + displayName.split(" ")[0];
-
+/* ---------------- Dashboard home ---------------- */
+function showDashboard() {
+  $("dash-main-home").style.display = "block";
+  $("dash-main-profile").style.display = "none";
   showView("dashboard");
+  refreshHeader();
+  renderModules();
 
-  if (isAdmin) {
+  if (currentProfile && currentProfile.role === "admin") {
     $("approval-panel").style.display = "block";
     loadPendingApprovals();
   } else {
     $("approval-panel").style.display = "none";
   }
+}
+
+function refreshHeader() {
+  const displayName = (currentProfile && currentProfile.full_name) || (currentSession && currentSession.user.email) || "ผู้ใช้งาน";
+  const displayPosition = (currentProfile && currentProfile.position) || "บุคลากร";
+  const isAdmin = currentProfile && currentProfile.role === "admin";
+
+  $("user-name").textContent = displayName;
+  $("user-role").innerHTML = displayPosition + (isAdmin ? ` <span class="admin-pill">${t("adminBadge")}</span>` : "");
+  $("greeting").textContent = t("hello") + ", " + displayName.split(" ")[0];
+  $("select-system-text").textContent = t("selectSystem");
+  $("logout-btn").textContent = t("logout");
+  $("approval-title-text").textContent = t("approvalTitle");
+  $("approval-sub-text").textContent = t("approvalSub");
 }
 
 async function loadPendingApprovals() {
@@ -634,7 +792,7 @@ function renderApprovalList(list) {
   const container = $("approval-list");
   container.innerHTML = "";
   if (list.length === 0) {
-    container.innerHTML = `<p class="approval-empty">ไม่มีรายการรอดำเนินการในขณะนี้</p>`;
+    container.innerHTML = `<p class="approval-empty">${t("approvalEmpty")}</p>`;
     return;
   }
   list.forEach((row) => {
@@ -646,8 +804,8 @@ function renderApprovalList(list) {
         <p class="approval-position">${row.position || "-"}</p>
       </div>
       <div class="approval-actions">
-        <button class="approve-btn" data-id="${row.id}" data-action="active">อนุมัติ</button>
-        <button class="reject-btn" data-id="${row.id}" data-action="rejected">ปฏิเสธ</button>
+        <button class="approve-btn" data-id="${row.id}" data-action="active">${t("approve")}</button>
+        <button class="reject-btn" data-id="${row.id}" data-action="rejected">${t("reject")}</button>
       </div>
     `;
     container.appendChild(item);
@@ -678,10 +836,136 @@ async function handleApprovalAction(id, status) {
   }
 }
 
+/* ---------------- Profile page (self-service) ---------------- */
+function openProfilePage() {
+  $("dash-main-home").style.display = "none";
+  $("dash-main-profile").style.display = "block";
+
+  $("profile-fullname").value = (currentProfile && currentProfile.full_name) || "";
+  $("profile-position").value = (currentProfile && currentProfile.position) || "";
+  $("profile-email").value = (currentSession && currentSession.user.email) || "";
+  $("profile-language").value = currentLanguage;
+  $("profile-newpw").value = "";
+  $("profile-confirmpw").value = "";
+  setProfileInfoMsg("");
+  setProfilePwMsg("");
+
+  refreshProfileLabels();
+}
+
+function refreshProfileLabels() {
+  $("profile-back-label").textContent = t("profile.back");
+  $("profile-page-title").textContent = t("profile.pageTitle");
+  $("profile-section1-title").textContent = t("profile.section1");
+  $("lbl-fullname").textContent = t("profile.fullName");
+  $("lbl-position").textContent = t("profile.position");
+  $("lbl-email").textContent = t("profile.email");
+  $("lbl-language").textContent = t("profile.language");
+  $("profile-save-btn").textContent = t("profile.save");
+  $("profile-section2-title").textContent = t("profile.pwTitle");
+  $("lbl-newpw").textContent = t("profile.newPw");
+  $("lbl-confirmpw").textContent = t("profile.confirmPw");
+  $("profile-pw-btn").textContent = t("profile.changePw");
+}
+
+function setProfileInfoMsg(msg, isError) {
+  const el = $("profile-info-msg");
+  el.style.display = msg ? "block" : "none";
+  el.textContent = msg || "";
+  el.style.color = isError ? "#8B2E3C" : "#5B7A5E";
+}
+function setProfilePwMsg(msg, isError) {
+  const el = $("profile-pw-msg");
+  el.style.display = msg ? "block" : "none";
+  el.textContent = msg || "";
+  el.style.color = isError ? "#8B2E3C" : "#5B7A5E";
+}
+
+async function handleProfileSave() {
+  if (!currentSession) return;
+  const fullName = $("profile-fullname").value.trim();
+  const position = $("profile-position").value.trim();
+  const language = $("profile-language").value;
+
+  if (!fullName || !position) {
+    setProfileInfoMsg(t("profile.fillRequired"), true);
+    return;
+  }
+
+  $("profile-save-btn").disabled = true;
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${currentSession.user.id}`, {
+      method: "PATCH",
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: `Bearer ${currentSession.access_token}`,
+        "Content-Type": "application/json",
+        Prefer: "return=minimal",
+      },
+      body: JSON.stringify({ full_name: fullName, position, language }),
+    });
+    if (!res.ok) throw new Error("บันทึกข้อมูลไม่สำเร็จ");
+
+    currentProfile = { ...currentProfile, full_name: fullName, position, language };
+    currentLanguage = language === "en" ? "en" : "th";
+
+    refreshHeader();
+    refreshProfileLabels();
+    setProfileInfoMsg(t("profile.saved"), false);
+  } catch (err) {
+    setProfileInfoMsg(err.message, true);
+  } finally {
+    $("profile-save-btn").disabled = false;
+  }
+}
+
+async function handlePasswordChange() {
+  if (!currentSession) return;
+  const newPw = $("profile-newpw").value;
+  const confirmPw = $("profile-confirmpw").value;
+
+  if (!newPw || !confirmPw) {
+    setProfilePwMsg(t("profile.fillRequired"), true);
+    return;
+  }
+  if (newPw.length < 6) {
+    setProfilePwMsg(t("profile.pwTooShort"), true);
+    return;
+  }
+  if (newPw !== confirmPw) {
+    setProfilePwMsg(t("profile.pwMismatch"), true);
+    return;
+  }
+
+  $("profile-pw-btn").disabled = true;
+  try {
+    const res = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+      method: "PUT",
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: `Bearer ${currentSession.access_token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ password: newPw }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error_description || data.msg || data.error || "เปลี่ยนรหัสผ่านไม่สำเร็จ");
+
+    $("profile-newpw").value = "";
+    $("profile-confirmpw").value = "";
+    setProfilePwMsg(t("profile.pwChanged"), false);
+  } catch (err) {
+    setProfilePwMsg(err.message, true);
+  } finally {
+    $("profile-pw-btn").disabled = false;
+  }
+}
+
 /* ---------------- Logout / navigation ---------------- */
 function handleLogout() {
   currentSession = null;
   currentProfile = null;
+  currentLanguage = "th";
   $("login-email").value = "";
   $("login-password").value = "";
   setLoginError("");
@@ -696,6 +980,9 @@ $("go-signup-btn").addEventListener("click", () => { setLoginError(""); showView
 $("go-login-btn").addEventListener("click", () => { setSignupError(""); showView("login"); });
 $("pending-back-btn").addEventListener("click", handleLogout);
 $("logout-btn").addEventListener("click", handleLogout);
+$("profile-back-btn").addEventListener("click", showDashboard);
+$("profile-save-btn").addEventListener("click", handleProfileSave);
+$("profile-pw-btn").addEventListener("click", handlePasswordChange);
 
 renderModules();
 </script>
