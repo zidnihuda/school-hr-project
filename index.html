@@ -15,8 +15,8 @@ html, body {
   color: #20303F;
 }
 
-/* ---------- Login ---------- */
-.login-stage {
+/* ---------- Auth stage (login / signup / pending share this) ---------- */
+.auth-stage {
   min-height: 100vh;
   display: flex;
   align-items: center;
@@ -28,7 +28,7 @@ html, body {
     repeating-linear-gradient(90deg, rgba(246,244,236,0.035) 0px, rgba(246,244,236,0.035) 1px, transparent 1px, transparent 28px);
 }
 
-.login-card {
+.auth-card {
   width: 100%;
   max-width: 380px;
   background: #F6F4EC;
@@ -39,11 +39,13 @@ html, body {
   border-top: 4px solid #B8924A;
   transition: transform 0.25s ease;
 }
+.auth-card.is-stamping { transform: scale(0.99); }
 
 .seal-wrap { display: inline-flex; margin-bottom: 6px; }
 .seal-svg { width: 76px; height: 76px; }
 .seal-text-main { font-family: "Taviraj", serif; font-size: 22px; fill: #B8924A; }
 .seal-text-sub { font-family: "Sarabun", sans-serif; font-size: 11px; fill: #8B2E3C; letter-spacing: 0.5px; }
+.seal-svg.muted { filter: grayscale(1) opacity(0.55); }
 
 @keyframes stampHit {
   0% { transform: scale(1) rotate(0deg); }
@@ -52,12 +54,11 @@ html, body {
   100% { transform: scale(1) rotate(0deg); }
 }
 .stamp-anim .seal-svg { animation: stampHit 0.6s ease; }
-.login-card.is-stamping { transform: scale(0.99); }
 
 .brand-title { font-family: "Taviraj", serif; font-weight: 600; font-size: 21px; margin: 10px 0 2px; color: #20303F; }
 .brand-sub { font-size: 13px; color: #6B7A72; margin: 0 0 22px; }
 
-.login-form { display: flex; flex-direction: column; text-align: left; }
+.auth-form { display: flex; flex-direction: column; text-align: left; }
 .field-label { font-size: 11px; letter-spacing: 0.6px; text-transform: uppercase; color: #8B7A4E; font-weight: 600; margin: 14px 0 6px; }
 .field-input {
   border: 1.5px solid #DCD6C4;
@@ -93,7 +94,31 @@ html, body {
 .submit-btn:disabled { opacity: 0.65; cursor: default; }
 .submit-btn:focus-visible { outline: 2px solid #B8924A; outline-offset: 2px; }
 
+.text-link {
+  background: none;
+  border: none;
+  color: #8B6A2C;
+  font-family: inherit;
+  font-size: 12.5px;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+}
+
 .login-footnote { margin-top: 20px; font-size: 11.5px; color: #9A9580; }
+.signup-switch { margin-top: 16px; font-size: 12.5px; color: #6B7A72; }
+
+.pending-msg { font-size: 13.5px; color: #51605A; line-height: 1.6; margin: 4px 0 24px; }
+.pending-tag {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 20px;
+  padding: 3px 12px;
+  margin-bottom: 14px;
+}
+.pending-tag.pending { background: #F1E9D6; color: #8B6A2C; }
+.pending-tag.rejected { background: #F3DFE1; color: #8B2E3C; }
 
 /* ---------- Dashboard ---------- */
 .dash-root { min-height: 100vh; background: #F6F4EC; }
@@ -162,16 +187,71 @@ html, body {
 .module-desc { font-size: 12px; color: #79877F; line-height: 1.4; }
 .module-tag { position: absolute; top: 14px; right: 14px; font-size: 10px; background: #F1E9D6; color: #8B6A2C; border-radius: 20px; padding: 2px 9px; font-weight: 600; }
 
+/* ---------- Admin approval panel ---------- */
+.approval-panel {
+  margin-top: 32px;
+  background: #FFFFFF;
+  border: 1px solid #E4DFCD;
+  border-radius: 14px;
+  padding: 20px 20px 8px;
+}
+.approval-panel-title {
+  font-family: "Taviraj", serif;
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 2px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.approval-count {
+  background: #8B2E3C;
+  color: #F6F4EC;
+  font-size: 11px;
+  border-radius: 20px;
+  padding: 1px 9px;
+}
+.approval-panel-sub { font-size: 12px; color: #79877F; margin: 0 0 14px; }
+.approval-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 0;
+  border-top: 1px solid #EFEAD9;
+  flex-wrap: wrap;
+}
+.approval-row:first-of-type { border-top: none; }
+.approval-info p { margin: 0; }
+.approval-name { font-size: 13.5px; font-weight: 600; color: #20303F; }
+.approval-position { font-size: 12px; color: #79877F; margin-top: 2px; }
+.approval-actions { display: flex; gap: 8px; }
+.approve-btn, .reject-btn {
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 8px;
+  padding: 7px 13px;
+  cursor: pointer;
+  border: 1.5px solid transparent;
+}
+.approve-btn { background: #5B7A5E; color: #F6F4EC; }
+.approve-btn:hover { background: #4D6850; }
+.reject-btn { background: transparent; border-color: #D8B6BB; color: #8B2E3C; }
+.reject-btn:hover { background: #F3DFE1; }
+.approval-empty { font-size: 12.5px; color: #9A9580; padding: 10px 0 16px; }
+
 .toast {
   position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
   background: #20303F; color: #F6F4EC; padding: 11px 18px; border-radius: 10px;
-  font-size: 13px; box-shadow: 0 12px 28px rgba(0,0,0,0.25);
+  font-size: 13px; box-shadow: 0 12px 28px rgba(0,0,0,0.25); z-index: 50;
 }
 
 @media (max-width: 560px) {
-  .login-card { padding: 28px 20px 22px; }
+  .auth-card { padding: 28px 20px 22px; }
   .dash-header { padding: 14px 16px; }
   .dash-main { padding: 22px 16px 32px; }
+  .approval-row { align-items: flex-start; }
 }
 @media (prefers-reduced-motion: reduce) {
   .stamp-anim .seal-svg { animation: none; }
@@ -181,9 +261,10 @@ html, body {
 </head>
 <body>
 
-<div id="view-login" class="login-stage">
-  <div class="login-card" id="login-card">
-    <div class="seal-wrap" id="seal-wrap">
+<!-- ================= LOGIN ================= -->
+<div id="view-login" class="auth-stage">
+  <div class="auth-card" id="login-card">
+    <div class="seal-wrap" id="login-seal-wrap">
       <svg viewBox="0 0 120 120" class="seal-svg">
         <circle cx="60" cy="60" r="56" fill="none" stroke="#B8924A" stroke-width="3" />
         <circle cx="60" cy="60" r="46" fill="none" stroke="#B8924A" stroke-width="1.5" />
@@ -194,22 +275,83 @@ html, body {
     <h1 class="brand-title">ระบบบริหารงานบุคลากร</h1>
     <p class="brand-sub">สำหรับเจ้าหน้าที่และบุคลากรของโรงเรียน</p>
 
-    <div class="login-form">
-      <label class="field-label" for="email">อีเมล</label>
-      <input id="email" type="email" class="field-input" placeholder="name@school.ac.th" autocomplete="username" />
+    <div class="auth-form">
+      <label class="field-label" for="login-email">อีเมล</label>
+      <input id="login-email" type="email" class="field-input" placeholder="name@school.ac.th" autocomplete="username" />
 
-      <label class="field-label" for="password">รหัสผ่าน</label>
-      <input id="password" type="password" class="field-input" placeholder="••••••••" autocomplete="current-password" />
+      <label class="field-label" for="login-password">รหัสผ่าน</label>
+      <input id="login-password" type="password" class="field-input" placeholder="••••••••" autocomplete="current-password" />
 
-      <p class="field-error" id="field-error" style="display:none;"></p>
+      <p class="field-error" id="login-error" style="display:none;"></p>
 
-      <button type="button" class="submit-btn" id="submit-btn">เข้าสู่ระบบ</button>
+      <button type="button" class="submit-btn" id="login-submit-btn">เข้าสู่ระบบ</button>
     </div>
 
+    <p class="signup-switch">ยังไม่มีบัญชี? <button type="button" class="text-link" id="go-signup-btn">สมัครสมาชิก</button></p>
     <p class="login-footnote">สำหรับบุคลากรที่ได้รับสิทธิ์เข้าใช้งานเท่านั้น</p>
   </div>
 </div>
 
+<!-- ================= SIGN UP ================= -->
+<div id="view-signup" class="auth-stage" style="display:none;">
+  <div class="auth-card">
+    <div class="seal-wrap">
+      <svg viewBox="0 0 120 120" class="seal-svg">
+        <circle cx="60" cy="60" r="56" fill="none" stroke="#B8924A" stroke-width="3" />
+        <circle cx="60" cy="60" r="46" fill="none" stroke="#B8924A" stroke-width="1.5" />
+        <text x="60" y="58" text-anchor="middle" class="seal-text-main">รร.</text>
+        <text x="60" y="78" text-anchor="middle" class="seal-text-sub">บุคลากร</text>
+      </svg>
+    </div>
+    <h1 class="brand-title">สมัครสมาชิก</h1>
+    <p class="brand-sub">ลงทะเบียนเพื่อขอสิทธิ์เข้าใช้งานระบบ</p>
+
+    <div class="auth-form">
+      <label class="field-label" for="su-fullname">ชื่อ-นามสกุล</label>
+      <input id="su-fullname" type="text" class="field-input" placeholder="เช่น สมหญิง ใจดี" />
+
+      <label class="field-label" for="su-position">ตำแหน่ง</label>
+      <input id="su-position" type="text" class="field-input" placeholder="เช่น ครูผู้สอน, ธุรการ" />
+
+      <label class="field-label" for="su-email">อีเมล</label>
+      <input id="su-email" type="email" class="field-input" placeholder="name@school.ac.th" autocomplete="username" />
+
+      <label class="field-label" for="su-password">รหัสผ่าน</label>
+      <input id="su-password" type="password" class="field-input" placeholder="อย่างน้อย 6 ตัวอักษร" autocomplete="new-password" />
+
+      <label class="field-label" for="su-password2">ยืนยันรหัสผ่าน</label>
+      <input id="su-password2" type="password" class="field-input" placeholder="พิมพ์รหัสผ่านอีกครั้ง" autocomplete="new-password" />
+
+      <p class="field-error" id="signup-error" style="display:none;"></p>
+
+      <button type="button" class="submit-btn" id="signup-submit-btn">สมัครสมาชิก</button>
+    </div>
+
+    <p class="signup-switch">มีบัญชีอยู่แล้ว? <button type="button" class="text-link" id="go-login-btn">เข้าสู่ระบบ</button></p>
+  </div>
+</div>
+
+<!-- ================= PENDING / REJECTED ================= -->
+<div id="view-pending" class="auth-stage" style="display:none;">
+  <div class="auth-card">
+    <div class="seal-wrap">
+      <svg viewBox="0 0 120 120" class="seal-svg muted" id="pending-seal">
+        <circle cx="60" cy="60" r="56" fill="none" stroke="#B8924A" stroke-width="3" />
+        <circle cx="60" cy="60" r="46" fill="none" stroke="#B8924A" stroke-width="1.5" />
+        <text x="60" y="58" text-anchor="middle" class="seal-text-main">รร.</text>
+        <text x="60" y="78" text-anchor="middle" class="seal-text-sub">บุคลากร</text>
+      </svg>
+    </div>
+    <span class="pending-tag pending" id="pending-tag">รอการอนุมัติ</span>
+    <h1 class="brand-title" id="pending-title">ลงทะเบียนสำเร็จ</h1>
+    <p class="pending-msg" id="pending-msg">
+      บัญชีของคุณถูกส่งให้ผู้ดูแลระบบตรวจสอบแล้ว เมื่อได้รับการอนุมัติจะสามารถเข้าใช้งานระบบได้ตามปกติ
+    </p>
+    <button type="button" class="submit-btn" id="pending-back-btn">กลับไปหน้าเข้าสู่ระบบ</button>
+  </div>
+</div>
+
+<!-- ================= DASHBOARD ================= -->
 <div id="view-dashboard" class="dash-root" style="display:none;">
   <header class="dash-header">
     <div class="dash-brand">
@@ -235,6 +377,12 @@ html, body {
     <h2 class="dash-greeting" id="greeting">สวัสดี</h2>
     <p class="dash-greeting-sub">เลือกระบบที่ต้องการใช้งานด้านล่าง</p>
     <div class="module-grid" id="module-grid"></div>
+
+    <div class="approval-panel" id="approval-panel" style="display:none;">
+      <p class="approval-panel-title">รายชื่อรอการอนุมัติ <span class="approval-count" id="approval-count">0</span></p>
+      <p class="approval-panel-sub">บุคลากรที่สมัครสมาชิกใหม่จะต้องได้รับการอนุมัติก่อนเข้าใช้งานระบบได้</p>
+      <div id="approval-list"></div>
+    </div>
   </main>
 </div>
 
@@ -254,8 +402,27 @@ const MODULES = [
 ];
 
 const $ = (id) => document.getElementById(id);
-let loading = false;
+let loginLoading = false;
+let signupLoading = false;
+let currentSession = null;  // { access_token, user }
+let currentProfile = null;  // { full_name, position, role, status }
 
+function showView(name) {
+  $("view-login").style.display = name === "login" ? "flex" : "none";
+  $("view-signup").style.display = name === "signup" ? "flex" : "none";
+  $("view-pending").style.display = name === "pending" ? "flex" : "none";
+  $("view-dashboard").style.display = name === "dashboard" ? "block" : "none";
+}
+
+function showToast(msg) {
+  const toast = $("toast");
+  toast.textContent = msg;
+  toast.style.display = "block";
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => (toast.style.display = "none"), 2200);
+}
+
+/* ---------------- Module cards ---------------- */
 function renderModules() {
   const grid = $("module-grid");
   grid.innerHTML = "";
@@ -273,43 +440,30 @@ function renderModules() {
   });
 }
 
-function showToast(msg) {
-  const toast = $("toast");
-  toast.textContent = msg;
-  toast.style.display = "block";
-  clearTimeout(toast._t);
-  toast._t = setTimeout(() => (toast.style.display = "none"), 2200);
+/* ---------------- Login ---------------- */
+function setLoginError(msg) {
+  const el = $("login-error");
+  el.style.display = msg ? "block" : "none";
+  el.textContent = msg || "";
 }
-
-function setError(msg) {
-  const el = $("field-error");
-  if (!msg) {
-    el.style.display = "none";
-    el.textContent = "";
-  } else {
-    el.style.display = "block";
-    el.textContent = msg;
-  }
-}
-
-function setLoading(v) {
-  loading = v;
-  $("submit-btn").disabled = v;
-  $("submit-btn").textContent = v ? "กำลังตรวจสอบ..." : "เข้าสู่ระบบ";
-  $("email").disabled = v;
-  $("password").disabled = v;
+function setLoginLoading(v) {
+  loginLoading = v;
+  $("login-submit-btn").disabled = v;
+  $("login-submit-btn").textContent = v ? "กำลังตรวจสอบ..." : "เข้าสู่ระบบ";
+  $("login-email").disabled = v;
+  $("login-password").disabled = v;
 }
 
 async function handleLogin() {
-  if (loading) return;
-  setError("");
-  const email = $("email").value.trim();
-  const password = $("password").value;
+  if (loginLoading) return;
+  setLoginError("");
+  const email = $("login-email").value.trim();
+  const password = $("login-password").value;
   if (!email || !password) {
-    setError("กรุณากรอกอีเมลและรหัสผ่าน");
+    setLoginError("กรุณากรอกอีเมลและรหัสผ่าน");
     return;
   }
-  setLoading(true);
+  setLoginLoading(true);
   try {
     const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
       method: "POST",
@@ -321,30 +475,126 @@ async function handleLogin() {
       throw new Error(data.error_description || data.msg || data.error || "อีเมลหรือรหัสผ่านไม่ถูกต้อง");
     }
 
-    // เล่นแอนิเมชันตราประทับ
-    $("login-card").classList.add("is-stamping");
-    $("seal-wrap").classList.add("stamp-anim");
+    currentSession = { access_token: data.access_token, user: data.user };
 
     let profile = null;
     try {
       const pRes = await fetch(
-        `${SUPABASE_URL}/rest/v1/profiles?id=eq.${data.user.id}&select=full_name,position,role`,
+        `${SUPABASE_URL}/rest/v1/profiles?id=eq.${data.user.id}&select=full_name,position,role,status`,
         { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${data.access_token}` } }
       );
       const rows = await pRes.json();
       if (Array.isArray(rows) && rows[0]) profile = rows[0];
     } catch (_) {}
+    currentProfile = profile;
 
-    setTimeout(() => {
-      showDashboard(profile, data.user.email);
-      setLoading(false);
-    }, 900);
+    if (profile && profile.status === "active") {
+      $("login-card").classList.add("is-stamping");
+      $("login-seal-wrap").classList.add("stamp-anim");
+      setTimeout(() => {
+        showDashboard(profile, data.user.email);
+        setLoginLoading(false);
+      }, 900);
+    } else {
+      const status = profile ? profile.status : "pending";
+      showPendingScreen(status, "login");
+      setLoginLoading(false);
+    }
   } catch (err) {
-    setError(err.message);
-    setLoading(false);
+    setLoginError(err.message);
+    setLoginLoading(false);
   }
 }
 
+/* ---------------- Sign up ---------------- */
+function setSignupError(msg) {
+  const el = $("signup-error");
+  el.style.display = msg ? "block" : "none";
+  el.textContent = msg || "";
+}
+function setSignupLoading(v) {
+  signupLoading = v;
+  $("signup-submit-btn").disabled = v;
+  $("signup-submit-btn").textContent = v ? "กำลังส่งคำขอ..." : "สมัครสมาชิก";
+  ["su-fullname","su-position","su-email","su-password","su-password2"].forEach(id => $(id).disabled = v);
+}
+
+async function handleSignup() {
+  if (signupLoading) return;
+  setSignupError("");
+  const fullName = $("su-fullname").value.trim();
+  const position = $("su-position").value.trim();
+  const email = $("su-email").value.trim();
+  const password = $("su-password").value;
+  const password2 = $("su-password2").value;
+
+  if (!fullName || !position || !email || !password || !password2) {
+    setSignupError("กรุณากรอกข้อมูลให้ครบทุกช่อง");
+    return;
+  }
+  if (password.length < 6) {
+    setSignupError("รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร");
+    return;
+  }
+  if (password !== password2) {
+    setSignupError("รหัสผ่านทั้งสองช่องไม่ตรงกัน");
+    return;
+  }
+
+  setSignupLoading(true);
+  try {
+    const res = await fetch(`${SUPABASE_URL}/auth/v1/signup`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", apikey: SUPABASE_KEY },
+      body: JSON.stringify({
+        email,
+        password,
+        data: { full_name: fullName, position: position },
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.error_description || data.msg || data.error || "สมัครสมาชิกไม่สำเร็จ ลองใหม่อีกครั้ง");
+    }
+    // เคลียร์ฟอร์ม แล้วแสดงหน้ารออนุมัติ (ไม่ใช้ session ที่ได้กลับมา ปล่อยให้รอ admin อนุมัติก่อน)
+    ["su-fullname","su-position","su-email","su-password","su-password2"].forEach(id => $(id).value = "");
+    showPendingScreen("pending", "signup");
+  } catch (err) {
+    setSignupError(err.message);
+  } finally {
+    setSignupLoading(false);
+  }
+}
+
+/* ---------------- Pending / Rejected screen ---------------- */
+function showPendingScreen(status, context) {
+  const tag = $("pending-tag");
+  const title = $("pending-title");
+  const msg = $("pending-msg");
+  const seal = $("pending-seal");
+
+  if (status === "rejected") {
+    tag.className = "pending-tag rejected";
+    tag.textContent = "ไม่ได้รับอนุมัติ";
+    title.textContent = "บัญชีนี้ไม่ได้รับสิทธิ์เข้าใช้งาน";
+    msg.textContent = "กรุณาติดต่อผู้ดูแลระบบของโรงเรียนเพื่อสอบถามรายละเอียดเพิ่มเติม";
+    seal.classList.add("muted");
+  } else {
+    tag.className = "pending-tag pending";
+    tag.textContent = "รอการอนุมัติ";
+    if (context === "signup") {
+      title.textContent = "ลงทะเบียนสำเร็จ";
+      msg.textContent = "บัญชีของคุณถูกส่งให้ผู้ดูแลระบบตรวจสอบแล้ว เมื่อได้รับการอนุมัติจะสามารถเข้าใช้งานระบบได้ตามปกติ";
+    } else {
+      title.textContent = "บัญชีนี้ยังรอการอนุมัติ";
+      msg.textContent = "ผู้ดูแลระบบยังไม่ได้อนุมัติบัญชีของคุณ กรุณารอการแจ้งเตือนหรือติดต่อผู้ดูแลระบบ";
+    }
+    seal.classList.add("muted");
+  }
+  showView("pending");
+}
+
+/* ---------------- Dashboard ---------------- */
 function showDashboard(profile, email) {
   const displayName = (profile && profile.full_name) || email || "ผู้ใช้งาน";
   const displayPosition = (profile && profile.position) || "บุคลากร";
@@ -355,24 +605,96 @@ function showDashboard(profile, email) {
     displayPosition + (isAdmin ? ` <span class="admin-pill">ผู้ดูแลระบบ</span>` : "");
   $("greeting").textContent = "สวัสดี, " + displayName.split(" ")[0];
 
-  $("view-login").style.display = "none";
-  $("view-dashboard").style.display = "block";
+  showView("dashboard");
+
+  if (isAdmin) {
+    $("approval-panel").style.display = "block";
+    loadPendingApprovals();
+  } else {
+    $("approval-panel").style.display = "none";
+  }
 }
 
+async function loadPendingApprovals() {
+  if (!currentSession) return;
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/profiles?status=eq.pending&select=id,full_name,position`,
+      { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${currentSession.access_token}` } }
+    );
+    const rows = await res.json();
+    renderApprovalList(Array.isArray(rows) ? rows : []);
+  } catch (_) {
+    renderApprovalList([]);
+  }
+}
+
+function renderApprovalList(list) {
+  $("approval-count").textContent = list.length;
+  const container = $("approval-list");
+  container.innerHTML = "";
+  if (list.length === 0) {
+    container.innerHTML = `<p class="approval-empty">ไม่มีรายการรอดำเนินการในขณะนี้</p>`;
+    return;
+  }
+  list.forEach((row) => {
+    const item = document.createElement("div");
+    item.className = "approval-row";
+    item.innerHTML = `
+      <div class="approval-info">
+        <p class="approval-name">${row.full_name || "(ไม่มีชื่อ)"}</p>
+        <p class="approval-position">${row.position || "-"}</p>
+      </div>
+      <div class="approval-actions">
+        <button class="approve-btn" data-id="${row.id}" data-action="active">อนุมัติ</button>
+        <button class="reject-btn" data-id="${row.id}" data-action="rejected">ปฏิเสธ</button>
+      </div>
+    `;
+    container.appendChild(item);
+  });
+  container.querySelectorAll("button[data-action]").forEach((btn) => {
+    btn.addEventListener("click", () => handleApprovalAction(btn.dataset.id, btn.dataset.action));
+  });
+}
+
+async function handleApprovalAction(id, status) {
+  if (!currentSession) return;
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${id}`, {
+      method: "PATCH",
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: `Bearer ${currentSession.access_token}`,
+        "Content-Type": "application/json",
+        Prefer: "return=minimal",
+      },
+      body: JSON.stringify({ status }),
+    });
+    if (!res.ok) throw new Error("อัปเดตสถานะไม่สำเร็จ");
+    showToast(status === "active" ? "อนุมัติบัญชีแล้ว" : "ปฏิเสธบัญชีแล้ว");
+    loadPendingApprovals();
+  } catch (err) {
+    showToast(err.message);
+  }
+}
+
+/* ---------------- Logout / navigation ---------------- */
 function handleLogout() {
-  $("view-dashboard").style.display = "none";
-  $("view-login").style.display = "flex";
-  $("login-card").classList.remove("is-stamping");
-  $("seal-wrap").classList.remove("stamp-anim");
-  $("email").value = "";
-  $("password").value = "";
-  setError("");
+  currentSession = null;
+  currentProfile = null;
+  $("login-email").value = "";
+  $("login-password").value = "";
+  setLoginError("");
+  showView("login");
 }
 
-$("submit-btn").addEventListener("click", handleLogin);
-$("password").addEventListener("keydown", (e) => {
-  if (e.key === "Enter") handleLogin();
-});
+$("login-submit-btn").addEventListener("click", handleLogin);
+$("login-password").addEventListener("keydown", (e) => { if (e.key === "Enter") handleLogin(); });
+$("signup-submit-btn").addEventListener("click", handleSignup);
+$("su-password2").addEventListener("keydown", (e) => { if (e.key === "Enter") handleSignup(); });
+$("go-signup-btn").addEventListener("click", () => { setLoginError(""); showView("signup"); });
+$("go-login-btn").addEventListener("click", () => { setSignupError(""); showView("login"); });
+$("pending-back-btn").addEventListener("click", handleLogout);
 $("logout-btn").addEventListener("click", handleLogout);
 
 renderModules();
