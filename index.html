@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ระบบบริหารงานบุคลากร</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Taviraj:wght@500;600&family=Sarabun:wght@400;500;600;700&display=swap');
+
+* { box-sizing: border-box; }
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: "Sarabun", "Noto Sans Thai", system-ui, sans-serif;
+  color: #20303F;
+}
+
+/* ---------- Login ---------- */
+.login-stage {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 16px;
+  background: #283B34;
+  background-image:
+    repeating-linear-gradient(0deg, rgba(246,244,236,0.035) 0px, rgba(246,244,236,0.035) 1px, transparent 1px, transparent 28px),
+    repeating-linear-gradient(90deg, rgba(246,244,236,0.035) 0px, rgba(246,244,236,0.035) 1px, transparent 1px, transparent 28px);
+}
+
+.login-card {
+  width: 100%;
+  max-width: 380px;
+  background: #F6F4EC;
+  border-radius: 18px;
+  padding: 36px 30px 28px;
+  text-align: center;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.28);
+  border-top: 4px solid #B8924A;
+  transition: transform 0.25s ease;
+}
+
+.seal-wrap { display: inline-flex; margin-bottom: 6px; }
+.seal-svg { width: 76px; height: 76px; }
+.seal-text-main { font-family: "Taviraj", serif; font-size: 22px; fill: #B8924A; }
+.seal-text-sub { font-family: "Sarabun", sans-serif; font-size: 11px; fill: #8B2E3C; letter-spacing: 0.5px; }
+
+@keyframes stampHit {
+  0% { transform: scale(1) rotate(0deg); }
+  35% { transform: scale(1.18) rotate(-6deg); }
+  55% { transform: scale(0.92) rotate(2deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+.stamp-anim .seal-svg { animation: stampHit 0.6s ease; }
+.login-card.is-stamping { transform: scale(0.99); }
+
+.brand-title { font-family: "Taviraj", serif; font-weight: 600; font-size: 21px; margin: 10px 0 2px; color: #20303F; }
+.brand-sub { font-size: 13px; color: #6B7A72; margin: 0 0 22px; }
+
+.login-form { display: flex; flex-direction: column; text-align: left; }
+.field-label { font-size: 11px; letter-spacing: 0.6px; text-transform: uppercase; color: #8B7A4E; font-weight: 600; margin: 14px 0 6px; }
+.field-input {
+  border: 1.5px solid #DCD6C4;
+  background: #FFFFFF;
+  border-radius: 9px;
+  padding: 11px 13px;
+  font-size: 14px;
+  font-family: inherit;
+  color: #20303F;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  width: 100%;
+}
+.field-input:focus { border-color: #B8924A; box-shadow: 0 0 0 3px rgba(184,146,74,0.22); }
+.field-error { color: #8B2E3C; font-size: 12.5px; margin: 10px 0 0; }
+
+.submit-btn {
+  margin-top: 22px;
+  background: #20303F;
+  color: #F6F4EC;
+  border: none;
+  border-radius: 9px;
+  padding: 12px 16px;
+  font-size: 14.5px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.1s ease;
+  width: 100%;
+}
+.submit-btn:hover:not(:disabled) { background: #16222D; }
+.submit-btn:active:not(:disabled) { transform: translateY(1px); }
+.submit-btn:disabled { opacity: 0.65; cursor: default; }
+.submit-btn:focus-visible { outline: 2px solid #B8924A; outline-offset: 2px; }
+
+.login-footnote { margin-top: 20px; font-size: 11.5px; color: #9A9580; }
+
+/* ---------- Dashboard ---------- */
+.dash-root { min-height: 100vh; background: #F6F4EC; }
+
+.dash-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: #20303F;
+  color: #F6F4EC;
+  padding: 16px 24px;
+  flex-wrap: wrap;
+}
+
+.dash-brand { display: flex; align-items: center; gap: 12px; }
+.mini-seal-text { font-family: "Taviraj", serif; font-size: 12px; fill: #B8924A; }
+.dash-brand-title { font-family: "Taviraj", serif; font-weight: 600; font-size: 15px; margin: 0; }
+.dash-brand-sub { font-size: 11px; color: #9FB0A6; margin: 1px 0 0; letter-spacing: 0.4px; }
+
+.dash-user { display: flex; align-items: center; gap: 16px; }
+.dash-user-info { text-align: right; }
+.dash-user-name { font-size: 13.5px; font-weight: 600; margin: 0; }
+.dash-user-role { font-size: 11.5px; color: #B7C2BB; margin: 2px 0 0; display: flex; align-items: center; justify-content: flex-end; gap: 6px; }
+.admin-pill { display: inline-flex; align-items: center; gap: 3px; background: rgba(184,146,74,0.22); color: #E2C988; border-radius: 20px; padding: 2px 8px; font-size: 10.5px; }
+
+.logout-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: transparent; border: 1.5px solid rgba(246,244,236,0.35); color: #F6F4EC;
+  border-radius: 8px; padding: 8px 12px; font-size: 12.5px; font-family: inherit; cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.logout-btn:hover { background: rgba(246,244,236,0.08); border-color: #B8924A; }
+.logout-btn:focus-visible { outline: 2px solid #B8924A; outline-offset: 2px; }
+
+.dash-main { padding: 28px 24px 40px; max-width: 980px; margin: 0 auto; }
+.dash-greeting { font-family: "Taviraj", serif; font-size: 22px; font-weight: 600; margin: 0 0 2px; color: #20303F; }
+.dash-greeting-sub { font-size: 13px; color: #6B7A72; margin: 0 0 22px; }
+
+.module-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px; }
+
+.module-card {
+  position: relative;
+  background: #FFFFFF;
+  border: 1px solid #E4DFCD;
+  border-radius: 14px;
+  padding: 18px 16px 16px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+.module-card:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(32,48,63,0.1); border-color: #B8924A; }
+.module-card:focus-visible { outline: 2px solid #B8924A; outline-offset: 2px; }
+
+.module-icon {
+  width: 38px; height: 38px; border-radius: 10px;
+  background: #F1E9D6; color: #8B6A2C;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 4px; font-family: "Taviraj", serif; font-weight: 600; font-size: 13px;
+}
+.module-title { font-size: 14.5px; font-weight: 600; color: #20303F; }
+.module-desc { font-size: 12px; color: #79877F; line-height: 1.4; }
+.module-tag { position: absolute; top: 14px; right: 14px; font-size: 10px; background: #F1E9D6; color: #8B6A2C; border-radius: 20px; padding: 2px 9px; font-weight: 600; }
+
+.toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  background: #20303F; color: #F6F4EC; padding: 11px 18px; border-radius: 10px;
+  font-size: 13px; box-shadow: 0 12px 28px rgba(0,0,0,0.25);
+}
+
+@media (max-width: 560px) {
+  .login-card { padding: 28px 20px 22px; }
+  .dash-header { padding: 14px 16px; }
+  .dash-main { padding: 22px 16px 32px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .stamp-anim .seal-svg { animation: none; }
+  .module-card { transition: none; }
+}
+</style>
+</head>
+<body>
+
+<div id="view-login" class="login-stage">
+  <div class="login-card" id="login-card">
+    <div class="seal-wrap" id="seal-wrap">
+      <svg viewBox="0 0 120 120" class="seal-svg">
+        <circle cx="60" cy="60" r="56" fill="none" stroke="#B8924A" stroke-width="3" />
+        <circle cx="60" cy="60" r="46" fill="none" stroke="#B8924A" stroke-width="1.5" />
+        <text x="60" y="58" text-anchor="middle" class="seal-text-main">รร.</text>
+        <text x="60" y="78" text-anchor="middle" class="seal-text-sub">บุคลากร</text>
+      </svg>
+    </div>
+    <h1 class="brand-title">ระบบบริหารงานบุคลากร</h1>
+    <p class="brand-sub">สำหรับเจ้าหน้าที่และบุคลากรของโรงเรียน</p>
+
+    <div class="login-form">
+      <label class="field-label" for="email">อีเมล</label>
+      <input id="email" type="email" class="field-input" placeholder="name@school.ac.th" autocomplete="username" />
+
+      <label class="field-label" for="password">รหัสผ่าน</label>
+      <input id="password" type="password" class="field-input" placeholder="••••••••" autocomplete="current-password" />
+
+      <p class="field-error" id="field-error" style="display:none;"></p>
+
+      <button type="button" class="submit-btn" id="submit-btn">เข้าสู่ระบบ</button>
+    </div>
+
+    <p class="login-footnote">สำหรับบุคลากรที่ได้รับสิทธิ์เข้าใช้งานเท่านั้น</p>
+  </div>
+</div>
+
+<div id="view-dashboard" class="dash-root" style="display:none;">
+  <header class="dash-header">
+    <div class="dash-brand">
+      <svg viewBox="0 0 40 40" width="34" height="34">
+        <circle cx="20" cy="20" r="18" fill="none" stroke="#B8924A" stroke-width="2" />
+        <text x="20" y="25" text-anchor="middle" class="mini-seal-text">รร.</text>
+      </svg>
+      <div>
+        <p class="dash-brand-title">ระบบบริหารงานบุคลากร</p>
+        <p class="dash-brand-sub">School Personnel System</p>
+      </div>
+    </div>
+    <div class="dash-user">
+      <div class="dash-user-info">
+        <p class="dash-user-name" id="user-name">-</p>
+        <p class="dash-user-role" id="user-role"></p>
+      </div>
+      <button class="logout-btn" id="logout-btn">ออกจากระบบ</button>
+    </div>
+  </header>
+
+  <main class="dash-main">
+    <h2 class="dash-greeting" id="greeting">สวัสดี</h2>
+    <p class="dash-greeting-sub">เลือกระบบที่ต้องการใช้งานด้านล่าง</p>
+    <div class="module-grid" id="module-grid"></div>
+  </main>
+</div>
+
+<div class="toast" id="toast" style="display:none;"></div>
+
+<script>
+// --- ใส่ Project URL และ Publishable Key ของคุณตรงนี้ ---
+const SUPABASE_URL = "https://aggmdscjpghroeoafmev.supabase.co";
+const SUPABASE_KEY = "sb_publishable_35uwuARNHkd8TmXTdtvaSQ_-Yih5YK2";
+
+const MODULES = [
+  { title: "ข้อมูลพนักงาน", desc: "ประวัติและข้อมูลส่วนตัวบุคลากร", tag: "พก" },
+  { title: "ลงเวลา / ลางาน", desc: "บันทึกเวลาเข้า-ออกและการลา", tag: "วล" },
+  { title: "เงินเดือน / สวัสดิการ", desc: "สลิปเงินเดือนและสิทธิประโยชน์", tag: "งด" },
+  { title: "ประเมินผลปฏิบัติงาน", desc: "แบบประเมินและผลงานประจำปี", tag: "ปม" },
+  { title: "เอกสาร / คำสั่งราชการ", desc: "คำสั่ง หนังสือเวียน และเอกสารราชการ", tag: "อก" },
+];
+
+const $ = (id) => document.getElementById(id);
+let loading = false;
+
+function renderModules() {
+  const grid = $("module-grid");
+  grid.innerHTML = "";
+  MODULES.forEach((m) => {
+    const card = document.createElement("button");
+    card.className = "module-card";
+    card.innerHTML = `
+      <span class="module-icon">${m.tag}</span>
+      <span class="module-title">${m.title}</span>
+      <span class="module-desc">${m.desc}</span>
+      <span class="module-tag">เร็วๆนี้</span>
+    `;
+    card.addEventListener("click", () => showToast(`โมดูล "${m.title}" อยู่ระหว่างพัฒนา เร็วๆนี้`));
+    grid.appendChild(card);
+  });
+}
+
+function showToast(msg) {
+  const toast = $("toast");
+  toast.textContent = msg;
+  toast.style.display = "block";
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => (toast.style.display = "none"), 2200);
+}
+
+function setError(msg) {
+  const el = $("field-error");
+  if (!msg) {
+    el.style.display = "none";
+    el.textContent = "";
+  } else {
+    el.style.display = "block";
+    el.textContent = msg;
+  }
+}
+
+function setLoading(v) {
+  loading = v;
+  $("submit-btn").disabled = v;
+  $("submit-btn").textContent = v ? "กำลังตรวจสอบ..." : "เข้าสู่ระบบ";
+  $("email").disabled = v;
+  $("password").disabled = v;
+}
+
+async function handleLogin() {
+  if (loading) return;
+  setError("");
+  const email = $("email").value.trim();
+  const password = $("password").value;
+  if (!email || !password) {
+    setError("กรุณากรอกอีเมลและรหัสผ่าน");
+    return;
+  }
+  setLoading(true);
+  try {
+    const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", apikey: SUPABASE_KEY },
+      body: JSON.stringify({ email, password }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.error_description || data.msg || data.error || "อีเมลหรือรหัสผ่านไม่ถูกต้อง");
+    }
+
+    // เล่นแอนิเมชันตราประทับ
+    $("login-card").classList.add("is-stamping");
+    $("seal-wrap").classList.add("stamp-anim");
+
+    let profile = null;
+    try {
+      const pRes = await fetch(
+        `${SUPABASE_URL}/rest/v1/profiles?id=eq.${data.user.id}&select=full_name,position,role`,
+        { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${data.access_token}` } }
+      );
+      const rows = await pRes.json();
+      if (Array.isArray(rows) && rows[0]) profile = rows[0];
+    } catch (_) {}
+
+    setTimeout(() => {
+      showDashboard(profile, data.user.email);
+      setLoading(false);
+    }, 900);
+  } catch (err) {
+    setError(err.message);
+    setLoading(false);
+  }
+}
+
+function showDashboard(profile, email) {
+  const displayName = (profile && profile.full_name) || email || "ผู้ใช้งาน";
+  const displayPosition = (profile && profile.position) || "บุคลากร";
+  const isAdmin = profile && profile.role === "admin";
+
+  $("user-name").textContent = displayName;
+  $("user-role").innerHTML =
+    displayPosition + (isAdmin ? ` <span class="admin-pill">ผู้ดูแลระบบ</span>` : "");
+  $("greeting").textContent = "สวัสดี, " + displayName.split(" ")[0];
+
+  $("view-login").style.display = "none";
+  $("view-dashboard").style.display = "block";
+}
+
+function handleLogout() {
+  $("view-dashboard").style.display = "none";
+  $("view-login").style.display = "flex";
+  $("login-card").classList.remove("is-stamping");
+  $("seal-wrap").classList.remove("stamp-anim");
+  $("email").value = "";
+  $("password").value = "";
+  setError("");
+}
+
+$("submit-btn").addEventListener("click", handleLogin);
+$("password").addEventListener("keydown", (e) => {
+  if (e.key === "Enter") handleLogin();
+});
+$("logout-btn").addEventListener("click", handleLogout);
+
+renderModules();
+</script>
+
+</body>
+</html>
