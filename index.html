@@ -291,6 +291,9 @@ html, body {
       <p class="field-error" id="login-error" style="display:none;"></p>
 
       <button type="button" class="submit-btn" id="login-submit-btn">เข้าสู่ระบบ</button>
+      <p style="text-align:center; margin-top:14px;">
+        <button type="button" class="text-link" id="go-forgot-btn">ลืมรหัสผ่าน?</button>
+      </p>
     </div>
 
     <p class="signup-switch">ยังไม่มีบัญชี? <button type="button" class="text-link" id="go-signup-btn">สมัครสมาชิก</button></p>
@@ -354,6 +357,63 @@ html, body {
       บัญชีของคุณถูกส่งให้ผู้ดูแลระบบตรวจสอบแล้ว เมื่อได้รับการอนุมัติจะสามารถเข้าใช้งานระบบได้ตามปกติ
     </p>
     <button type="button" class="submit-btn" id="pending-back-btn">กลับไปหน้าเข้าสู่ระบบ</button>
+  </div>
+</div>
+
+<!-- ================= FORGOT PASSWORD ================= -->
+<div id="view-forgot" class="auth-stage" style="display:none;">
+  <div class="auth-card">
+    <div class="seal-wrap">
+      <svg viewBox="0 0 120 120" class="seal-svg">
+        <circle cx="60" cy="60" r="56" fill="none" stroke="#B8924A" stroke-width="3" />
+        <circle cx="60" cy="60" r="46" fill="none" stroke="#B8924A" stroke-width="1.5" />
+        <text x="60" y="58" text-anchor="middle" class="seal-text-main">รร.</text>
+        <text x="60" y="78" text-anchor="middle" class="seal-text-sub">บุคลากร</text>
+      </svg>
+    </div>
+    <h1 class="brand-title">ลืมรหัสผ่าน</h1>
+    <p class="brand-sub">กรอกอีเมลที่ใช้ลงทะเบียน เราจะส่งลิงก์สำหรับตั้งรหัสผ่านใหม่ไปให้</p>
+
+    <div class="auth-form">
+      <label class="field-label" for="forgot-email">อีเมล</label>
+      <input id="forgot-email" type="email" class="field-input" placeholder="name@school.ac.th" autocomplete="username" />
+
+      <p class="field-error" id="forgot-error" style="display:none;"></p>
+      <p id="forgot-success" style="display:none; color:#5B7A5E; font-size:12.5px; margin:10px 0 0;"></p>
+
+      <button type="button" class="submit-btn" id="forgot-submit-btn">ส่งลิงก์รีเซ็ตรหัสผ่าน</button>
+    </div>
+
+    <p class="signup-switch"><button type="button" class="text-link" id="forgot-back-btn">กลับไปหน้าเข้าสู่ระบบ</button></p>
+  </div>
+</div>
+
+<!-- ================= SET NEW PASSWORD (จากลิงก์ในอีเมล) ================= -->
+<div id="view-reset" class="auth-stage" style="display:none;">
+  <div class="auth-card">
+    <div class="seal-wrap">
+      <svg viewBox="0 0 120 120" class="seal-svg">
+        <circle cx="60" cy="60" r="56" fill="none" stroke="#B8924A" stroke-width="3" />
+        <circle cx="60" cy="60" r="46" fill="none" stroke="#B8924A" stroke-width="1.5" />
+        <text x="60" y="58" text-anchor="middle" class="seal-text-main">รร.</text>
+        <text x="60" y="78" text-anchor="middle" class="seal-text-sub">บุคลากร</text>
+      </svg>
+    </div>
+    <h1 class="brand-title">ตั้งรหัสผ่านใหม่</h1>
+    <p class="brand-sub">กรอกรหัสผ่านใหม่ที่ต้องการใช้เข้าสู่ระบบ</p>
+
+    <div class="auth-form">
+      <label class="field-label" for="reset-password">รหัสผ่านใหม่</label>
+      <input id="reset-password" type="password" class="field-input" placeholder="อย่างน้อย 6 ตัวอักษร" autocomplete="new-password" />
+
+      <label class="field-label" for="reset-password2">ยืนยันรหัสผ่านใหม่</label>
+      <input id="reset-password2" type="password" class="field-input" placeholder="พิมพ์รหัสผ่านอีกครั้ง" autocomplete="new-password" />
+
+      <p class="field-error" id="reset-error" style="display:none;"></p>
+      <p id="reset-success" style="display:none; color:#5B7A5E; font-size:12.5px; margin:10px 0 0;"></p>
+
+      <button type="button" class="submit-btn" id="reset-submit-btn">บันทึกรหัสผ่านใหม่</button>
+    </div>
   </div>
 </div>
 
@@ -442,9 +502,21 @@ html, body {
 <div class="toast" id="toast" style="display:none;"></div>
 
 <script>
-// --- ใส่ Project URL และ Publishable Key ของคุณตรงนี้ ---
-const SUPABASE_URL = "https://aggmdscjpghroeoafmev.supabase.co";
-const SUPABASE_KEY = "sb_publishable_35uwuARNHkd8TmXTdtvaSQ_-Yih5YK2";
+// --- ใส่ URL ของ Google Apps Script Web App ที่ deploy ไว้ตรงนี้ ---
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxqBqa9S7kfqwQJxElLCCVn9t90snpuYqXpXDDQjntS-BSFwEXu9LQkNODpyCgt0gYf/exec";
+
+/** เรียก backend (Google Apps Script) ด้วย action + payload แบบเดียวกันทุกครั้ง
+ *  หมายเหตุ: ตั้งใจไม่ใส่ header "Content-Type: application/json" เพื่อให้ browser
+ *  ส่งเป็น text/plain แทน ซึ่งจะไม่โดน CORS preflight บล็อก (ข้อจำกัดของ Apps Script) */
+async function callBackend(action, payload) {
+  const res = await fetch(APPS_SCRIPT_URL, {
+    method: "POST",
+    body: JSON.stringify(Object.assign({ action: action }, payload || {})),
+  });
+  const data = await res.json();
+  if (data.error) throw new Error(data.error);
+  return data;
+}
 
 const MODULE_KEYS = ["profile", "attendance", "payroll", "evaluation", "documents"];
 const MODULE_TAGS = {
@@ -538,9 +610,10 @@ const I18N = {
 const $ = (id) => document.getElementById(id);
 let loginLoading = false;
 let signupLoading = false;
-let currentSession = null;  // { access_token, user }
-let currentProfile = null;  // { full_name, position, role, status, language }
+let currentSession = null;  // { token }
+let currentProfile = null;  // { id, email, full_name, position, role, status, language }
 let currentLanguage = "th";
+let recoveryResetToken = null;
 
 function t(path) {
   const dict = I18N[currentLanguage] || I18N.th;
@@ -551,6 +624,8 @@ function showView(name) {
   $("view-login").style.display = name === "login" ? "flex" : "none";
   $("view-signup").style.display = name === "signup" ? "flex" : "none";
   $("view-pending").style.display = name === "pending" ? "flex" : "none";
+  $("view-forgot").style.display = name === "forgot" ? "flex" : "none";
+  $("view-reset").style.display = name === "reset" ? "flex" : "none";
   $("view-dashboard").style.display = name === "dashboard" ? "block" : "none";
 }
 
@@ -615,31 +690,13 @@ async function handleLogin() {
   }
   setLoginLoading(true);
   try {
-    const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", apikey: SUPABASE_KEY },
-      body: JSON.stringify({ email, password }),
-    });
-    const data = await res.json();
-    if (!res.ok) {
-      throw new Error(data.error_description || data.msg || data.error || "อีเมลหรือรหัสผ่านไม่ถูกต้อง");
-    }
+    const data = await callBackend("login", { email, password });
 
-    currentSession = { access_token: data.access_token, user: data.user };
+    currentSession = { token: data.token };
+    currentProfile = data.profile;
 
-    let profile = null;
-    try {
-      const pRes = await fetch(
-        `${SUPABASE_URL}/rest/v1/profiles?id=eq.${data.user.id}&select=full_name,position,role,status,language`,
-        { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${data.access_token}` } }
-      );
-      const rows = await pRes.json();
-      if (Array.isArray(rows) && rows[0]) profile = rows[0];
-    } catch (_) {}
-    currentProfile = profile;
-
-    if (profile && profile.status === "active") {
-      currentLanguage = profile.language === "en" ? "en" : "th";
+    if (currentProfile && currentProfile.status === "active") {
+      currentLanguage = currentProfile.language === "en" ? "en" : "th";
       $("login-card").classList.add("is-stamping");
       $("login-seal-wrap").classList.add("stamp-anim");
       setTimeout(() => {
@@ -647,7 +704,7 @@ async function handleLogin() {
         setLoginLoading(false);
       }, 900);
     } else {
-      const status = profile ? profile.status : "pending";
+      const status = currentProfile ? currentProfile.status : "pending";
       showPendingScreen(status, "login");
       setLoginLoading(false);
     }
@@ -694,19 +751,7 @@ async function handleSignup() {
 
   setSignupLoading(true);
   try {
-    const res = await fetch(`${SUPABASE_URL}/auth/v1/signup`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", apikey: SUPABASE_KEY },
-      body: JSON.stringify({
-        email,
-        password,
-        data: { full_name: fullName, position: position },
-      }),
-    });
-    const data = await res.json();
-    if (!res.ok) {
-      throw new Error(data.error_description || data.msg || data.error || "สมัครสมาชิกไม่สำเร็จ ลองใหม่อีกครั้ง");
-    }
+    await callBackend("signup", { email, password, full_name: fullName, position });
     ["su-fullname", "su-position", "su-email", "su-password", "su-password2"].forEach((id) => ($(id).value = ""));
     showPendingScreen("pending", "signup");
   } catch (err) {
@@ -716,7 +761,93 @@ async function handleSignup() {
   }
 }
 
-/* ---------------- Pending / Rejected screen ---------------- */
+/* ---------------- Forgot password ---------------- */
+function setForgotMsg(error, success) {
+  const errEl = $("forgot-error");
+  const okEl = $("forgot-success");
+  errEl.style.display = error ? "block" : "none";
+  errEl.textContent = error || "";
+  okEl.style.display = success ? "block" : "none";
+  okEl.textContent = success || "";
+}
+
+async function handleForgotPassword() {
+  setForgotMsg("", "");
+  const email = $("forgot-email").value.trim();
+  if (!email) {
+    setForgotMsg("กรุณากรอกอีเมล", "");
+    return;
+  }
+  $("forgot-submit-btn").disabled = true;
+  try {
+    await callBackend("forgotPassword", { email });
+    setForgotMsg("", "ถ้ามีบัญชีนี้ในระบบ เราได้ส่งลิงก์สำหรับตั้งรหัสผ่านใหม่ไปที่อีเมลนี้แล้ว กรุณาตรวจสอบกล่องจดหมาย (รวมถึงโฟลเดอร์ Junk/Spam)");
+  } catch (err) {
+    setForgotMsg(err.message, "");
+  } finally {
+    $("forgot-submit-btn").disabled = false;
+  }
+}
+
+/* ---------------- Set new password (from email link) ---------------- */
+function setResetMsg(error, success) {
+  const errEl = $("reset-error");
+  const okEl = $("reset-success");
+  errEl.style.display = error ? "block" : "none";
+  errEl.textContent = error || "";
+  okEl.style.display = success ? "block" : "none";
+  okEl.textContent = success || "";
+}
+
+async function handleSetNewPassword() {
+  setResetMsg("", "");
+  const pw = $("reset-password").value;
+  const pw2 = $("reset-password2").value;
+  if (!pw || !pw2) {
+    setResetMsg("กรุณากรอกรหัสผ่านให้ครบทั้งสองช่อง", "");
+    return;
+  }
+  if (pw.length < 6) {
+    setResetMsg("รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร", "");
+    return;
+  }
+  if (pw !== pw2) {
+    setResetMsg("รหัสผ่านทั้งสองช่องไม่ตรงกัน", "");
+    return;
+  }
+  $("reset-submit-btn").disabled = true;
+  try {
+    await callBackend("resetPassword", { reset_token: recoveryResetToken, newPassword: pw });
+
+    recoveryResetToken = null;
+    $("reset-password").value = "";
+    $("reset-password2").value = "";
+    setResetMsg("", "ตั้งรหัสผ่านใหม่สำเร็จ กำลังพาไปหน้าเข้าสู่ระบบ...");
+    setTimeout(() => {
+      setResetMsg("", "");
+      showView("login");
+    }, 1800);
+  } catch (err) {
+    setResetMsg(err.message, "");
+  } finally {
+    $("reset-submit-btn").disabled = false;
+  }
+}
+
+/* ตรวจสอบว่าหน้านี้ถูกเปิดมาจากลิงก์รีเซ็ตรหัสผ่านในอีเมลหรือไม่ (token จะมาทาง URL hash) */
+function checkRecoveryHash() {
+  if (!window.location.hash) return false;
+  const params = new URLSearchParams(window.location.hash.substring(1));
+  if (params.get("type") === "recovery" && params.get("reset_token")) {
+    recoveryResetToken = params.get("reset_token");
+    history.replaceState(null, "", window.location.pathname + window.location.search);
+    showView("reset");
+    return true;
+  }
+  return false;
+}
+
+
 function showPendingScreen(status, context) {
   const tag = $("pending-tag");
   const title = $("pending-title");
@@ -760,7 +891,7 @@ function showDashboard() {
 }
 
 function refreshHeader() {
-  const displayName = (currentProfile && currentProfile.full_name) || (currentSession && currentSession.user.email) || "ผู้ใช้งาน";
+  const displayName = (currentProfile && currentProfile.full_name) || (currentProfile && currentProfile.email) || "ผู้ใช้งาน";
   const displayPosition = (currentProfile && currentProfile.position) || "บุคลากร";
   const isAdmin = currentProfile && currentProfile.role === "admin";
 
@@ -776,12 +907,8 @@ function refreshHeader() {
 async function loadPendingApprovals() {
   if (!currentSession) return;
   try {
-    const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/profiles?status=eq.pending&select=id,full_name,position`,
-      { headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${currentSession.access_token}` } }
-    );
-    const rows = await res.json();
-    renderApprovalList(Array.isArray(rows) ? rows : []);
+    const data = await callBackend("listPending", { token: currentSession.token });
+    renderApprovalList(Array.isArray(data.list) ? data.list : []);
   } catch (_) {
     renderApprovalList([]);
   }
@@ -818,17 +945,7 @@ function renderApprovalList(list) {
 async function handleApprovalAction(id, status) {
   if (!currentSession) return;
   try {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${id}`, {
-      method: "PATCH",
-      headers: {
-        apikey: SUPABASE_KEY,
-        Authorization: `Bearer ${currentSession.access_token}`,
-        "Content-Type": "application/json",
-        Prefer: "return=minimal",
-      },
-      body: JSON.stringify({ status }),
-    });
-    if (!res.ok) throw new Error("อัปเดตสถานะไม่สำเร็จ");
+    await callBackend("approve", { token: currentSession.token, id, status });
     showToast(status === "active" ? "อนุมัติบัญชีแล้ว" : "ปฏิเสธบัญชีแล้ว");
     loadPendingApprovals();
   } catch (err) {
@@ -843,7 +960,7 @@ function openProfilePage() {
 
   $("profile-fullname").value = (currentProfile && currentProfile.full_name) || "";
   $("profile-position").value = (currentProfile && currentProfile.position) || "";
-  $("profile-email").value = (currentSession && currentSession.user.email) || "";
+  $("profile-email").value = (currentProfile && currentProfile.email) || "";
   $("profile-language").value = currentLanguage;
   $("profile-newpw").value = "";
   $("profile-confirmpw").value = "";
@@ -894,17 +1011,7 @@ async function handleProfileSave() {
 
   $("profile-save-btn").disabled = true;
   try {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${currentSession.user.id}`, {
-      method: "PATCH",
-      headers: {
-        apikey: SUPABASE_KEY,
-        Authorization: `Bearer ${currentSession.access_token}`,
-        "Content-Type": "application/json",
-        Prefer: "return=minimal",
-      },
-      body: JSON.stringify({ full_name: fullName, position, language }),
-    });
-    if (!res.ok) throw new Error("บันทึกข้อมูลไม่สำเร็จ");
+    await callBackend("updateProfile", { token: currentSession.token, full_name: fullName, position, language });
 
     currentProfile = { ...currentProfile, full_name: fullName, position, language };
     currentLanguage = language === "en" ? "en" : "th";
@@ -939,17 +1046,7 @@ async function handlePasswordChange() {
 
   $("profile-pw-btn").disabled = true;
   try {
-    const res = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
-      method: "PUT",
-      headers: {
-        apikey: SUPABASE_KEY,
-        Authorization: `Bearer ${currentSession.access_token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ password: newPw }),
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error_description || data.msg || data.error || "เปลี่ยนรหัสผ่านไม่สำเร็จ");
+    await callBackend("changePassword", { token: currentSession.token, newPassword: newPw });
 
     $("profile-newpw").value = "";
     $("profile-confirmpw").value = "";
@@ -978,6 +1075,11 @@ $("signup-submit-btn").addEventListener("click", handleSignup);
 $("su-password2").addEventListener("keydown", (e) => { if (e.key === "Enter") handleSignup(); });
 $("go-signup-btn").addEventListener("click", () => { setLoginError(""); showView("signup"); });
 $("go-login-btn").addEventListener("click", () => { setSignupError(""); showView("login"); });
+$("go-forgot-btn").addEventListener("click", () => { setLoginError(""); setForgotMsg("", ""); showView("forgot"); });
+$("forgot-back-btn").addEventListener("click", () => { setForgotMsg("", ""); showView("login"); });
+$("forgot-submit-btn").addEventListener("click", handleForgotPassword);
+$("reset-submit-btn").addEventListener("click", handleSetNewPassword);
+$("reset-password2").addEventListener("keydown", (e) => { if (e.key === "Enter") handleSetNewPassword(); });
 $("pending-back-btn").addEventListener("click", handleLogout);
 $("logout-btn").addEventListener("click", handleLogout);
 $("profile-back-btn").addEventListener("click", showDashboard);
@@ -985,6 +1087,7 @@ $("profile-save-btn").addEventListener("click", handleProfileSave);
 $("profile-pw-btn").addEventListener("click", handlePasswordChange);
 
 renderModules();
+checkRecoveryHash();
 </script>
 
 </body>
