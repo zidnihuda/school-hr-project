@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>ระบบบริหารงานบุคคล-โรงเรียนสาธิตวิทยาการอิสลามฯ</title>
+<title>ระบบบริหารงานบุคลากร</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Taviraj:wght@500;600&family=Sarabun:wght@400;500;600;700&display=swap');
 
@@ -317,7 +317,7 @@ html, body {
 
     <div class="auth-form">
       <label class="field-label" for="su-fullname">ชื่อ-นามสกุล</label>
-      <input id="su-fullname" type="text" class="field-input" placeholder="เช่น ฮัมดี เจะมะ" />
+      <input id="su-fullname" type="text" class="field-input" placeholder="เช่น สมหญิง ใจดี" />
 
       <label class="field-label" for="su-position">ตำแหน่ง</label>
       <input id="su-position" type="text" class="field-input" placeholder="เช่น ครูผู้สอน, ธุรการ" />
@@ -497,9 +497,48 @@ html, body {
       </div>
     </div>
   </main>
-</div>
 
-<div class="toast" id="toast" style="display:none;"></div>
+  <!-- หน้าประเมินผลปฏิบัติงาน (รายงาน PDF) -->
+  <main class="dash-main" id="dash-main-reports" style="display:none;">
+    <button type="button" class="text-link back-link" id="reports-back-btn">‹ <span id="reports-back-label">กลับสู่หน้าหลัก</span></button>
+    <h2 class="dash-greeting" id="reports-page-title">ประเมินผลปฏิบัติงาน</h2>
+
+    <div class="panel-card" id="reports-staff-picker" style="display:none;">
+      <label class="field-label" id="lbl-reports-staff" for="reports-staff-select">เลือกพนักงาน</label>
+      <select id="reports-staff-select" class="field-input"></select>
+    </div>
+
+    <div class="panel-card profile-form" id="reports-upload-panel" style="display:none;">
+      <p class="panel-title" id="reports-upload-title">อัปโหลดรายงานใหม่</p>
+      <div class="auth-form">
+        <label class="field-label" id="lbl-report-year" for="report-year">ปีการศึกษา</label>
+        <input id="report-year" type="text" class="field-input" placeholder="เช่น 2569" />
+
+        <label class="field-label" id="lbl-report-term" for="report-term">เทอม</label>
+        <select id="report-term" class="field-input">
+          <option value="1">1</option>
+          <option value="2">2</option>
+        </select>
+
+        <label class="field-label" id="lbl-report-round" for="report-round">ครั้งที่</label>
+        <select id="report-round" class="field-input">
+          <option value="1">1</option>
+          <option value="2">2</option>
+        </select>
+
+        <label class="field-label" id="lbl-report-file" for="report-file">ไฟล์ PDF</label>
+        <input id="report-file" type="file" accept="application/pdf,.pdf" class="field-input" style="padding:8px;" />
+
+        <p id="report-upload-msg" style="display:none;"></p>
+        <button type="button" class="submit-btn" id="report-upload-btn">อัปโหลด</button>
+      </div>
+    </div>
+
+    <div class="panel-card">
+      <p class="panel-title" id="reports-list-title">รายงานของฉัน</p>
+      <div id="reports-list"></div>
+    </div>
+  </main>
 
 <script>
 // --- ใส่ URL ของ Google Apps Script Web App ที่ deploy ไว้ตรงนี้ ---
@@ -518,7 +557,35 @@ async function callBackend(action, payload) {
   return data;
 }
 
+/** จำ token ไว้ใน localStorage เพื่อไม่ให้หลุด login ทุกครั้งที่ refresh หน้า */
+function saveSessionToken(token) {
+  try { localStorage.setItem("hr_session", JSON.stringify({ token: token })); } catch (e) {}
+}
+function clearSessionToken() {
+  try { localStorage.removeItem("hr_session"); } catch (e) {}
+}
+async function restoreSession() {
+  let stored;
+  try { stored = JSON.parse(localStorage.getItem("hr_session") || "null"); } catch (e) { stored = null; }
+  if (!stored || !stored.token) return;
+
+  try {
+    const data = await callBackend("getProfile", { token: stored.token });
+    currentSession = { token: stored.token };
+    currentProfile = data.profile;
+    if (currentProfile.status === "active") {
+      currentLanguage = currentProfile.language === "en" ? "en" : "th";
+      showDashboard();
+    } else {
+      showPendingScreen(currentProfile.status, "login");
+    }
+  } catch (err) {
+    clearSessionToken();
+  }
+}
+
 const MODULE_KEYS = ["profile", "attendance", "payroll", "evaluation", "documents"];
+const READY_KEYS = ["profile", "evaluation"];
 const MODULE_TAGS = {
   th: ["พก", "วล", "งด", "ปม", "อก"],
   en: ["PF", "AT", "PR", "EV", "DC"],
@@ -564,6 +631,31 @@ const I18N = {
       pwMismatch: "รหัสผ่านทั้งสองช่องไม่ตรงกัน",
       pwTooShort: "รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร",
     },
+    reports: {
+      pageTitle: "ประเมินผลปฏิบัติงาน",
+      selectStaff: "เลือกพนักงาน",
+      you: "ตัวเอง",
+      uploadTitle: "อัปโหลดรายงานใหม่",
+      year: "ปีการศึกษา",
+      term: "เทอม",
+      round: "ครั้งที่",
+      file: "ไฟล์ PDF",
+      uploadBtn: "อัปโหลด",
+      uploading: "กำลังอัปโหลด...",
+      uploaded: "อัปโหลดสำเร็จ",
+      fillRequired: "กรุณากรอกข้อมูลให้ครบและเลือกไฟล์",
+      mustBePdf: "ไฟล์ต้องเป็น PDF เท่านั้น",
+      tooLarge: "ไฟล์ใหญ่เกินไป (จำกัดไม่เกิน 8MB)",
+      myReports: "รายงานของฉัน",
+      reportsOf: "รายงานของ",
+      empty: "ยังไม่มีรายงาน",
+      loading: "กำลังโหลด...",
+      view: "ดูรายงาน",
+      delete: "ลบ",
+      deleted: "ลบรายงานแล้ว",
+      confirmDelete: "ต้องการลบรายงานนี้ใช่หรือไม่",
+      opening: "กำลังเปิดไฟล์...",
+    },
   },
   en: {
     selectSystem: "Select a system below",
@@ -603,6 +695,31 @@ const I18N = {
       pwChanged: "Password changed successfully",
       pwMismatch: "Passwords do not match",
       pwTooShort: "Password must be at least 6 characters",
+    },
+    reports: {
+      pageTitle: "Performance Reports",
+      selectStaff: "Select staff",
+      you: "You",
+      uploadTitle: "Upload new report",
+      year: "Academic year",
+      term: "Term",
+      round: "Round",
+      file: "PDF file",
+      uploadBtn: "Upload",
+      uploading: "Uploading...",
+      uploaded: "Uploaded successfully",
+      fillRequired: "Please fill in all fields and choose a file",
+      mustBePdf: "File must be a PDF",
+      tooLarge: "File is too large (max 8MB)",
+      myReports: "My reports",
+      reportsOf: "Reports for",
+      empty: "No reports yet",
+      loading: "Loading...",
+      view: "View",
+      delete: "Delete",
+      deleted: "Report deleted",
+      confirmDelete: "Delete this report?",
+      opening: "Opening file...",
     },
   },
 };
@@ -647,7 +764,7 @@ function renderModules() {
     const key = MODULE_KEYS[i];
     const card = document.createElement("button");
     card.className = "module-card";
-    const tagHtml = key === "profile"
+    const tagHtml = READY_KEYS.indexOf(key) !== -1
       ? `<span class="module-tag ready">${t("ready")}</span>`
       : `<span class="module-tag">${t("comingSoon")}</span>`;
     card.innerHTML = `
@@ -658,6 +775,8 @@ function renderModules() {
     `;
     if (key === "profile") {
       card.addEventListener("click", openProfilePage);
+    } else if (key === "evaluation") {
+      card.addEventListener("click", openReportsPage);
     } else {
       card.addEventListener("click", () => showToast(t("devToast")(m.title)));
     }
@@ -694,6 +813,7 @@ async function handleLogin() {
 
     currentSession = { token: data.token };
     currentProfile = data.profile;
+    saveSessionToken(data.token);
 
     if (currentProfile && currentProfile.status === "active") {
       currentLanguage = currentProfile.language === "en" ? "en" : "th";
@@ -878,6 +998,7 @@ function showPendingScreen(status, context) {
 function showDashboard() {
   $("dash-main-home").style.display = "block";
   $("dash-main-profile").style.display = "none";
+  $("dash-main-reports").style.display = "none";
   showView("dashboard");
   refreshHeader();
   renderModules();
@@ -956,6 +1077,7 @@ async function handleApprovalAction(id, status) {
 /* ---------------- Profile page (self-service) ---------------- */
 function openProfilePage() {
   $("dash-main-home").style.display = "none";
+  $("dash-main-reports").style.display = "none";
   $("dash-main-profile").style.display = "block";
 
   $("profile-fullname").value = (currentProfile && currentProfile.full_name) || "";
@@ -1058,11 +1180,209 @@ async function handlePasswordChange() {
   }
 }
 
+/* ---------------- Performance reports (PDF) ---------------- */
+let reportsTargetId = null;
+
+async function openReportsPage() {
+  $("dash-main-home").style.display = "none";
+  $("dash-main-profile").style.display = "none";
+  $("dash-main-reports").style.display = "block";
+  refreshReportsLabels();
+
+  const isAdmin = currentProfile && currentProfile.role === "admin";
+  $("reports-staff-picker").style.display = isAdmin ? "block" : "none";
+  $("reports-upload-panel").style.display = isAdmin ? "block" : "none";
+  setReportUploadMsg("");
+
+  if (isAdmin) {
+    await loadStaffOptions();
+  } else {
+    reportsTargetId = currentProfile.id;
+    updateReportsListTitle();
+    loadReportsList();
+  }
+}
+
+async function loadStaffOptions() {
+  const sel = $("reports-staff-select");
+  sel.innerHTML = "";
+  try {
+    const data = await callBackend("listStaff", { token: currentSession.token });
+    const list = data.list || [];
+    list.forEach((s) => {
+      const opt = document.createElement("option");
+      opt.value = s.id;
+      opt.textContent = s.full_name + (s.id === currentProfile.id ? ` (${t("reports.you")})` : "");
+      sel.appendChild(opt);
+    });
+    reportsTargetId = currentProfile.id;
+    sel.value = currentProfile.id;
+  } catch (err) {
+    showToast(err.message);
+  }
+  updateReportsListTitle();
+  loadReportsList();
+}
+
+function updateReportsListTitle() {
+  const isAdmin = currentProfile && currentProfile.role === "admin";
+  if (!isAdmin) {
+    $("reports-list-title").textContent = t("reports.myReports");
+    return;
+  }
+  const sel = $("reports-staff-select");
+  const label = sel.options[sel.selectedIndex] ? sel.options[sel.selectedIndex].textContent : "";
+  $("reports-list-title").textContent = t("reports.reportsOf") + " " + label;
+}
+
+function refreshReportsLabels() {
+  $("reports-back-label").textContent = t("profile.back");
+  $("reports-page-title").textContent = t("reports.pageTitle");
+  $("lbl-reports-staff").textContent = t("reports.selectStaff");
+  $("reports-upload-title").textContent = t("reports.uploadTitle");
+  $("lbl-report-year").textContent = t("reports.year");
+  $("lbl-report-term").textContent = t("reports.term");
+  $("lbl-report-round").textContent = t("reports.round");
+  $("lbl-report-file").textContent = t("reports.file");
+  $("report-upload-btn").textContent = t("reports.uploadBtn");
+  updateReportsListTitle();
+}
+
+function setReportUploadMsg(msg, isError) {
+  const el = $("report-upload-msg");
+  el.style.display = msg ? "block" : "none";
+  el.textContent = msg || "";
+  el.style.color = isError ? "#8B2E3C" : "#5B7A5E";
+}
+
+async function loadReportsList() {
+  const container = $("reports-list");
+  container.innerHTML = `<p class="approval-empty">${t("reports.loading")}</p>`;
+  try {
+    const payload = { token: currentSession.token };
+    if (currentProfile.role === "admin") payload.profile_id = reportsTargetId;
+    const data = await callBackend("listReports", payload);
+    renderReportsList(data.list || []);
+  } catch (err) {
+    container.innerHTML = `<p class="approval-empty">${err.message}</p>`;
+  }
+}
+
+function renderReportsList(list) {
+  const container = $("reports-list");
+  container.innerHTML = "";
+  if (list.length === 0) {
+    container.innerHTML = `<p class="approval-empty">${t("reports.empty")}</p>`;
+    return;
+  }
+  const isAdmin = currentProfile && currentProfile.role === "admin";
+  list.forEach((r) => {
+    const item = document.createElement("div");
+    item.className = "approval-row";
+    const labelLine = `${t("reports.year")} ${r.year} • ${t("reports.term")} ${r.term} • ${t("reports.round")} ${r.round}`;
+    item.innerHTML = `
+      <div class="approval-info">
+        <p class="approval-name">${labelLine}</p>
+        <p class="approval-position">${r.file_name}</p>
+      </div>
+      <div class="approval-actions">
+        <button class="approve-btn" data-id="${r.id}" data-act="view">${t("reports.view")}</button>
+        ${isAdmin ? `<button class="reject-btn" data-id="${r.id}" data-act="delete">${t("reports.delete")}</button>` : ""}
+      </div>
+    `;
+    container.appendChild(item);
+  });
+  container.querySelectorAll("button[data-act]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      if (btn.dataset.act === "view") handleViewReport(btn.dataset.id);
+      else handleDeleteReportClick(btn.dataset.id);
+    });
+  });
+}
+
+async function handleViewReport(id) {
+  try {
+    showToast(t("reports.opening"));
+    const data = await callBackend("downloadReport", { token: currentSession.token, report_id: id });
+    const byteChars = atob(data.file_base64);
+    const byteNumbers = new Array(byteChars.length);
+    for (let i = 0; i < byteChars.length; i++) byteNumbers[i] = byteChars.charCodeAt(i);
+    const byteArray = new Uint8Array(byteNumbers);
+    const blob = new Blob([byteArray], { type: "application/pdf" });
+    const url = URL.createObjectURL(blob);
+    window.open(url, "_blank");
+  } catch (err) {
+    showToast(err.message);
+  }
+}
+
+async function handleDeleteReportClick(id) {
+  if (!window.confirm(t("reports.confirmDelete"))) return;
+  try {
+    await callBackend("deleteReport", { token: currentSession.token, report_id: id });
+    showToast(t("reports.deleted"));
+    loadReportsList();
+  } catch (err) {
+    showToast(err.message);
+  }
+}
+
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result).split(",")[1] || "");
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+async function handleUploadReport() {
+  const year = $("report-year").value.trim();
+  const term = $("report-term").value;
+  const round = $("report-round").value;
+  const file = $("report-file").files[0];
+
+  if (!year || !file) {
+    setReportUploadMsg(t("reports.fillRequired"), true);
+    return;
+  }
+  if (file.type !== "application/pdf") {
+    setReportUploadMsg(t("reports.mustBePdf"), true);
+    return;
+  }
+  if (file.size > 8 * 1024 * 1024) {
+    setReportUploadMsg(t("reports.tooLarge"), true);
+    return;
+  }
+
+  $("report-upload-btn").disabled = true;
+  setReportUploadMsg(t("reports.uploading"), false);
+  try {
+    const base64 = await fileToBase64(file);
+    await callBackend("uploadReport", {
+      token: currentSession.token,
+      profile_id: reportsTargetId,
+      year: year, term: term, round: round,
+      file_name: file.name,
+      file_base64: base64,
+    });
+    setReportUploadMsg(t("reports.uploaded"), false);
+    $("report-file").value = "";
+    $("report-year").value = "";
+    loadReportsList();
+  } catch (err) {
+    setReportUploadMsg(err.message, true);
+  } finally {
+    $("report-upload-btn").disabled = false;
+  }
+}
+
 /* ---------------- Logout / navigation ---------------- */
 function handleLogout() {
   currentSession = null;
   currentProfile = null;
   currentLanguage = "th";
+  clearSessionToken();
   $("login-email").value = "";
   $("login-password").value = "";
   setLoginError("");
@@ -1085,9 +1405,19 @@ $("logout-btn").addEventListener("click", handleLogout);
 $("profile-back-btn").addEventListener("click", showDashboard);
 $("profile-save-btn").addEventListener("click", handleProfileSave);
 $("profile-pw-btn").addEventListener("click", handlePasswordChange);
+$("reports-back-btn").addEventListener("click", showDashboard);
+$("reports-staff-select").addEventListener("change", (e) => {
+  reportsTargetId = e.target.value;
+  updateReportsListTitle();
+  loadReportsList();
+});
+$("report-upload-btn").addEventListener("click", handleUploadReport);
 
 renderModules();
-checkRecoveryHash();
+const cameFromRecoveryLink = checkRecoveryHash();
+if (!cameFromRecoveryLink) {
+  restoreSession();
+}
 </script>
 
 </body>
